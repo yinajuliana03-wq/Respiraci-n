@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Respiración Guiada - Calm</title>
+    <style>
+        :root {
+            --bg-color: #f4f0ea;
+            --card-bg: #ffffff;
+            --primary-color: #8b7bb0;
+            --text-color: #2c2c2c;
+            --accent-color: #a89bc2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            color: #666;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        /* Circle Animation Area */
+        .circle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 220px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .breathing-circle {
+            width: 100px;
+            height: 100px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(139, 123, 176, 0.3);
+            transition: transform 0.1s linear;
+        }
+
+        /* Breathing Animation States */
+        .circle-container.inhale .breathing-circle {
+            transform: scale(1.8);
+            transition: transform 4s ease-in-out;
+            background-color: #9d8ec2;
+        }
+
+        .circle-container.hold .breathing-circle {
+            transform: scale(1.8);
+            background-color: var(--primary-color);
+        }
+
+        .circle-container.exhale .breathing-circle {
+            transform: scale(1);
+            transition: transform 8s ease-in-out;
+            background-color: #bdae8b;
+        }
+
+        .instruction {
+            font-size: 1.3rem;
+            font-weight: 600;
+            min-height: 30px;
+            margin: 15px 0;
+            color: var(--text-color);
+        }
+
+        .timer-info {
+            font-size: 0.9rem;
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: #7a6a9f;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>EJERCICIO: 4-7-8</h1>
+        <p class="subtitle">Respira para calmar tu cuerpo y mente</p>
+
+        <div class="circle-container" id="visualContainer">
+            <div class="breathing-circle" id="circle">Listo</div>
+        </div>
+
+        <div class="instruction" id="instructionText">Haz clic en Iniciar</div>
+        <div class="timer-info" id="cycleText">Ciclo: 0 / 3</div>
+
+        <button class="btn" id="startBtn" onclick="toggleExercise()">Iniciar Respiración</button>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let currentCycle = 0;
+        const maxCycles = 3;
+        let timerTimeout;
+
+        const visualContainer = document.getElementById('visualContainer');
+        const circle = document.getElementById('circle');
+        const instructionText = document.getElementById('instructionText');
+        const cycleText = document.getElementById('cycleText');
+        const startBtn = document.getElementById('startBtn');
+
+        function toggleExercise() {
+            if (isRunning) {
+                stopExercise();
+            } else {
+                startExercise();
+            }
+        }
+
+        function startExercise() {
+            isRunning = true;
+            currentCycle = 0;
+            startBtn.textContent = 'Detener';
+            startBtn.style.backgroundColor = '#d9534f';
+            runCycle();
+        }
+
+        function stopExercise() {
+            isRunning = false;
+            clearTimeout(timerTimeout);
+            visualContainer.className = 'circle-container';
+            circle.textContent = 'Listo';
+            instructionText.textContent = 'Haz clic en Iniciar';
+            cycleText.textContent = 'Ciclo: 0 / 3';
+            startBtn.textContent = 'Iniciar Respiración';
+            startBtn.style.backgroundColor = 'var(--primary-color)';
+        }
+
+        function runCycle() {
+            if (!isRunning) return;
+
+            currentCycle++;
+            if (currentCycle > maxCycles) {
+                instructionText.textContent = '¡Excelente trabajo! Te has relajado.';
+                stopExercise();
+                return;
+            }
+
+            cycleText.textContent = `Ciclo: ${currentCycle} / ${maxCycles}`;
+
+            // 1. INHALAR (4 Segundos)
+            instructionText.textContent = '1. INHALA por la nariz...';
+            circle.textContent = '4s';
+            visualContainer.className = 'circle-container inhale';
+
+            timerTimeout = setTimeout(() => {
+                if (!isRunning) return;
+
+                // 2. SOSTENER (7 Segundos)
+                instructionText.textContent = '2. SOSTÉN el aire...';
+                circle.textContent = '7s';
+                visualContainer.className = 'circle-container hold';
+
+                timerTimeout = setTimeout(() => {
+                    if (!isRunning) return;
+
+                    // 3. EXHALAR (8 Segundos)
+                    instructionText.textContent = '3. EXHALA lentamente por la boca...';
+                    circle.textContent = '8s';
+                    visualContainer.className = 'circle-container exhale';
+
+                    timerTimeout = setTimeout(() => {
+                        if (isRunning) {
+                            runCycle(); // Repetir el siguiente ciclo
+                        }
+                    }, 8000); // 8 Segundos
+
+                }, 7000); // 7 Segundos
+
+            }, 4000); // 4 Segundos
+        }
+    </script>
+</body>
+</html>
