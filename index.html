@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,7 +11,6 @@
             --card-bg: #ffffff;
             --primary-color: #8b7bb0;
             --text-color: #2c2c2c;
-            --accent-color: #a89bc2;
         }
 
         body {
@@ -49,19 +49,17 @@
             margin-bottom: 30px;
         }
 
-        /* Circle Animation Area */
         .circle-container {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 220px;
             margin: 20px 0;
-            position: relative;
         }
 
         .breathing-circle {
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
             background-color: var(--primary-color);
             border-radius: 50%;
             display: flex;
@@ -69,15 +67,14 @@
             align-items: center;
             color: white;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 2.2rem;
             box-shadow: 0 0 20px rgba(139, 123, 176, 0.3);
-            transition: transform 0.1s linear;
+            transition: transform 1s linear;
         }
 
-        /* Breathing Animation States */
+        /* Animaciones de expansión y contracción */
         .circle-container.inhale .breathing-circle {
             transform: scale(1.8);
-            transition: transform 4s ease-in-out;
             background-color: #9d8ec2;
         }
 
@@ -88,7 +85,6 @@
 
         .circle-container.exhale .breathing-circle {
             transform: scale(1);
-            transition: transform 8s ease-in-out;
             background-color: #bdae8b;
         }
 
@@ -97,7 +93,6 @@
             font-weight: 600;
             min-height: 30px;
             margin: 15px 0;
-            color: var(--text-color);
         }
 
         .timer-info {
@@ -115,16 +110,7 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
             width: 100%;
-        }
-
-        .btn:hover {
-            background-color: #7a6a9f;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
         }
     </style>
 </head>
@@ -135,7 +121,7 @@
         <p class="subtitle">Respira para calmar tu cuerpo y mente</p>
 
         <div class="circle-container" id="visualContainer">
-            <div class="breathing-circle" id="circle">Listo</div>
+            <div class="breathing-circle" id="circle">--</div>
         </div>
 
         <div class="instruction" id="instructionText">Haz clic en Iniciar</div>
@@ -148,7 +134,7 @@
         let isRunning = false;
         let currentCycle = 0;
         const maxCycles = 3;
-        let timerTimeout;
+        let countdownInterval;
 
         const visualContainer = document.getElementById('visualContainer');
         const circle = document.getElementById('circle');
@@ -169,21 +155,21 @@
             currentCycle = 0;
             startBtn.textContent = 'Detener';
             startBtn.style.backgroundColor = '#d9534f';
-            runCycle();
+            runNextCycle();
         }
 
         function stopExercise() {
             isRunning = false;
-            clearTimeout(timerTimeout);
+            clearInterval(countdownInterval);
             visualContainer.className = 'circle-container';
-            circle.textContent = 'Listo';
+            circle.textContent = '--';
             instructionText.textContent = 'Haz clic en Iniciar';
             cycleText.textContent = 'Ciclo: 0 / 3';
             startBtn.textContent = 'Iniciar Respiración';
             startBtn.style.backgroundColor = 'var(--primary-color)';
         }
 
-        function runCycle() {
+        function runNextCycle() {
             if (!isRunning) return;
 
             currentCycle++;
@@ -195,36 +181,37 @@
 
             cycleText.textContent = `Ciclo: ${currentCycle} / ${maxCycles}`;
 
-            // 1. INHALAR (4 Segundos)
-            instructionText.textContent = '1. INHALA por la nariz...';
-            circle.textContent = '4s';
-            visualContainer.className = 'circle-container inhale';
+            // FASE 1: INHALAR (4s)
+            startPhase('1. INHALA por la nariz...', 'inhale', 4, () => {
+                // FASE 2: SOSTENER (7s)
+                startPhase('2. SOSTÉN el aire...', 'hold', 7, () => {
+                    // FASE 3: EXHALAR (8s)
+                    startPhase('3. EXHALA lentamente...', 'exhale', 8, () => {
+                        runNextCycle(); // Repetir ciclo
+                    });
+                });
+            });
+        }
 
-            timerTimeout = setTimeout(() => {
-                if (!isRunning) return;
+        function startPhase(text, cssClass, seconds, onComplete) {
+            if (!isRunning) return;
 
-                // 2. SOSTENER (7 Segundos)
-                instructionText.textContent = '2. SOSTÉN el aire...';
-                circle.textContent = '7s';
-                visualContainer.className = 'circle-container hold';
+            instructionText.textContent = text;
+            visualContainer.className = `circle-container ${cssClass}`;
+            
+            let remainingSeconds = seconds;
+            circle.textContent = remainingSeconds;
 
-                timerTimeout = setTimeout(() => {
-                    if (!isRunning) return;
-
-                    // 3. EXHALAR (8 Segundos)
-                    instructionText.textContent = '3. EXHALA lentamente por la boca...';
-                    circle.textContent = '8s';
-                    visualContainer.className = 'circle-container exhale';
-
-                    timerTimeout = setTimeout(() => {
-                        if (isRunning) {
-                            runCycle(); // Repetir el siguiente ciclo
-                        }
-                    }, 8000); // 8 Segundos
-
-                }, 7000); // 7 Segundos
-
-            }, 4000); // 4 Segundos
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                remainingSeconds--;
+                if (remainingSeconds > 0) {
+                    circle.textContent = remainingSeconds;
+                } else {
+                    clearInterval(countdownInterval);
+                    onComplete();
+                }
+            }, 1000);
         }
     </script>
 </body>
